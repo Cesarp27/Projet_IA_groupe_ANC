@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+      <title>AI4ALL</title>
+      <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+
+    {% include "navBar.html" %}
+
+    <div class="container">
+      
+      <h1>Bienvenue {{ request.user.username }} !
+          
+      </h1>
+
+      <br>
+    
+      <p>Avec IA4ALL, vous pouvez faire une analyse complète de votre ensemble de données </p> 
+      <p> La première chose à faire est de sélectionner votre jeu de données </p> 
+      <p> Ensuite, allez dans la section "Prédiction" du menu de navigation et sélectionnez le type d'étude que vous souhaitez réaliser</p>
+      
+      <br>
+
+      <h4> Veuillez sélectionner le fichier .csv que vous souhaitez analyser </h4>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="file"> <br>
+        <input type="submit">  
+      </form>
+      <br>
+
+      {% comment %} <div class="row">
+          <div class="col-xs-12">
+            Résultat du clustering DBScan :<br>
+            <ul>
+              <li>n_clusters_ : {{ n_clusters_}}</li>
+              <li>n_noise_ : {{n_noise_}}</li>
+              <li>Homogeneity : {{Homogeneity}}</li>
+            </ul>
+          </div>
+      </div>
+
+      <button data-toggle="collapse" data-target="#demo" class="btn btn-primary">Afficher/cacher les graphiques</button>
+      <div id="demo" class="collapse">
+        <div class="row">
+          <div class="col-sm-6">
+            {% autoescape off %}
+              {{ graphique }}
+            {% endautoescape %}
+          </div>
+
+          <div class="col-sm-6">
+            {% autoescape off %}
+              {{ graph2 }}
+            {% endautoescape %}
+          </div>
+
+          <div class="col-sm-6">
+            {% autoescape off %}
+              {{ graph3 }}
+            {% endautoescape %}
+          </div>
+
+          <div class="col-sm-6">
+            {% autoescape off %}
+              {{ graph4 }}
+            {% endautoescape %}
+          </div>
+        </div>
+
+      </div>
+
+    </div> {% endcomment %}
+
+    
+  </body>
+</html>
