@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <title>Classification</title>
+    <title>Regression</title>
     <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
@@ -14,13 +14,13 @@
 
 <div class="container">
 
-  <h1> Classification </h1>
+  <h1> Regression </h1>
   <h4>Utilisateur {{ request.user.username }} </h4>
 
   <br>
-  
-  <h5>Dans cette analyse de classification, nous présenterons quatre graphiques </h5>
-  <h5> qui vous permettront de mieux comprendre ce qui se passe avec votre ensemble de données </h5>  
+
+  <h5>Dans cette analyse de regression, nous présenterons quelques graphiques </h5>
+  <h5> qui vous permettront de mieux comprendre ce qui se passe avec votre ensemble de données </h5>
   <br>
 
   <form method="post" enctype="multipart/form-data">
@@ -67,24 +67,25 @@
   {% endif %}
   <br>
 
-  
-  {% if selected_column %} 
-    <h5>Veuillez sélectionner le modèle prédictif :</h5>     
+
+  {% if selected_column %}
+    <h5>Veuillez sélectionner le modèle prédictif :</h5>
     <form method="POST">
-      {% csrf_token %} 
-        <input type="submit" name="rfc" value="Random Forest Classifier" class="btn btn-success">
-        <input type="submit" name="adac" value="AdaBoost Classifier" class="btn btn-success">
-        <input type="submit" name="gbc" value="Gradient Boosting Classifier" class="btn btn-success"> 
+      {% csrf_token %}
+        <input type="submit" name="rfr" value="Random Forest Regressor" class="btn btn-success">
+        <input type="submit" name="adar" value="AdaBoost Regressor" class="btn btn-success">
+        <input type="submit" name="gbr" value="Gradient Boosting Regressor" class="btn btn-success">
     </form>
 
     <br>
 
-    {% if score %}  
+    {% if rmse %}
       <div class="row">
         <div class="col-xs-12">
           Résultats du Machine Learning pour l'archive: {{ fichier }}<br>
           <ul>
-            <li>Performance du modèle / Accuracy score : {{ score}}</li>
+            <li>Performance du modèle / RMSE  : {{ rmse}} </li>
+            <li>Performance du modèle / MAE  : {{ mae}}   </li>
 
           </ul>
         </div>
@@ -96,19 +97,19 @@
         <div class="row">
 
           <div class="col-sm-6" style="width: 100%; height: 100%;" >
-            
+
             {% autoescape off %}
               {{ graph }}
             {% endautoescape %}
-            
-          </div> 
+
+          </div>
 
           <div class="col-sm-6" style="width: 100%; height: 100%;">
-            
+
             {% autoescape off %}
               {{ graph2 }}
             {% endautoescape %}
-            
+
           </div>
 
           <div class="col-sm-6" style="width: 100%; height: 100%;">
@@ -117,9 +118,11 @@
             {% endautoescape %}
           </div>
 
-          <div class="col-sm-6">
-            <img class="img-fluid" src="data:image/png;base64,{{ graph4 }}" alt="Diagramme de dispersion"> 
-          </div> 
+          <div class="col-sm-6" style="width: 100%; height: 100%;">
+            {% autoescape off %}
+              {{ graph4 }}
+            {% endautoescape %}
+          </div>
 
         </div>
 
@@ -154,4 +157,3 @@
   </div>
 
 </body>
-</html>

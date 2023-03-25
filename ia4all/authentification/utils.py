@@ -7,6 +7,9 @@ import plotly.express as px
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+import plotly.graph_objs as go
+import plotly.offline as opy
+
 
 
 def plot_histograme(data, colonne):
@@ -73,12 +76,12 @@ def plot_feature_importances(df_numerique, model, fig):
     return fig2
 
 
-# def plot_diagramme_de_dispersion(data, colonne):
-#     # Graphique diagramme de dispersion
-#     fig = px.scatter_matrix(data, dimensions=data.columns[:-1], color=colonne, width=1000, height=1200)
-#     fig.update_traces(diagonal_visible=False)
-#     fig.update_layout(title="Diagramme de dispersion des paires de variables")
-#     return fig
+def scatter_plot(y_test, y_pred):
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=y_test, y=y_pred, mode='markers', name='data'))
+    # fig.add_trace(go.Scatter(x=y_test, y=y_pred, mode='lines', name='regressor'))
+    fig.update_layout(title='Scatter plot with GradientBoostingRegressor', xaxis_title='True values', yaxis_title='Predictions')
+    return fig
 
 
 

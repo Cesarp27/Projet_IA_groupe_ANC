@@ -21,14 +21,14 @@ import numpy as np
 import seaborn as sns
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier, RandomForestRegressor, GradientBoostingRegressor, AdaBoostRegressor
+from sklearn.metrics import accuracy_score, mean_absolute_error, mean_squared_error
 
 from django.core.files.storage import FileSystemStorage
 
 from .models import FilesUpload 
 
-from .utils import plot_histograme, plot_correlation, plot_feature_importances, plot_diagramme_de_dispersion
+from .utils import plot_histograme, plot_correlation, plot_feature_importances, plot_diagramme_de_dispersion, scatter_plot
 import io
 import urllib, base64
 
@@ -66,6 +66,37 @@ def machine_learning(df_utilisateur, target, model):
     
     return(machine_learning_results)    
 
+def machine_learning_regression(df_utilisateur, target, model):
+    df_utilisateur = df_utilisateur.dropna()
+
+    lb_encod = LabelEncoder()
+
+    # if df_utilisateur[target].dtype == 'object':
+    #     y = lb_encod.fit_transform(df_utilisateur[target])
+    #else:
+    y = df_utilisateur[target].values
+
+    X_original = df_utilisateur.drop(target, axis=1)
+    X_numerique = X_original.select_dtypes(include=['float64', 'int64'])  # .values
+    X_scaler = StandardScaler().fit_transform(X_numerique)
+
+    X_train, X_test, y_train, y_test = train_test_split(X_scaler, y, test_size=0.2, random_state=2)
+    model_entraine = model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+
+    rmse = mean_squared_error(y_test, y_pred)
+    mae = mean_absolute_error(y_test, y_pred)
+
+    # Results
+    machine_learning_results_regressor = []
+    machine_learning_results_regressor.append(X_numerique)
+    machine_learning_results_regressor.append(model_entraine)
+    machine_learning_results_regressor.append(rmse.round(4))
+    machine_learning_results_regressor.append(mae.round(4))
+    machine_learning_results_regressor.append(y_test)
+    machine_learning_results_regressor.append(y_pred)
+
+    return (machine_learning_results_regressor)
 
 
 # Mes graphiques
@@ -286,6 +317,8 @@ def explications(request):
     return render(request, "explications.html", context)
 
 
+
+
 @login_required
 def classification(request):
     files = FilesUpload.objects.filter(userid=request.user.id)
@@ -493,3 +526,209 @@ def classification(request):
     
     
     return render(request, "classification.html", context)
+
+
+
+@login_required
+def regression(request):
+    files = FilesUpload.objects.filter(userid=request.user.id)
+    df = None
+
+    if request.method == 'POST' and 'file' in request.POST:
+        # selected_file_id = request.POST['file']
+        selected_file_id = request.POST.get('file')
+        request.session[
+            'selected_file_id'] = selected_file_id  # "selected_file_id" est enregistré dans la session de l'utilisateur
+        selected_file = FilesUpload.objects.get(pk=selected_file_id)
+        fichier = selected_file.file
+        request.session['fichier'] = str(fichier)  # "fichier" est enregistré dans la session de l'utilisateur
+
+        print("=======>" + str(fichier))
+
+        # Lire les données du fichier CSV et les convertir en un dataframe
+        try:
+            data = pd.read_csv(fichier)
+            df = pd.DataFrame(data)
+            print("df.shape ----> " + str(df.shape))
+            request.session['df'] = df.to_dict()  # le dataframe est enregistré dans la session de l'utilisateur
+
+            context = {"fichier": fichier,
+                       'df': df,
+                       "files": files}
+
+        except Exception as e:
+            context = {"error_message": f"Veuillez sélectionner un fichier CSV valide - Erreur: {str(e)}",
+                       "files": files}
+            return render(request, "regression.html", context)
+
+    if request.method == 'POST' and 'colonne' in request.POST:
+        # le deuxième formulaire a été envoyé
+        selected_column = request.POST['colonne']
+        print(selected_column)
+        request.session['selected_column'] = selected_column
+
+        fichier = request.session.get('fichier')
+        selected_file_id = request.session.get('selected_file_id')
+
+        df_dict = request.session.get(
+            'df')  # récupérer le df sous la forme d'un dictionnaire à partir de la session de l'utilisateur
+        if df_dict is not None:
+            df = pd.DataFrame.from_dict(df_dict)
+
+        context = {"fichier": fichier,
+                   'df': df,
+                   "files": files,
+                   "selected_column": selected_column}
+
+    if request.method == 'POST' and 'rfr' in request.POST:
+        fichier = request.session.get('fichier')
+        selected_column = request.session.get('selected_column')
+        df_dict = request.session.get(
+            'df')  # récupérer le df sous la forme d'un dictionnaire à partir de la session de l'utilisateur
+        if df_dict is not None:
+            df = pd.DataFrame.from_dict(df_dict)
+        selected_column = request.session.get('selected_column')
+
+        df = df.dropna()
+
+        X_numerique, model_entraine, rmse, mae, y_test, y_pred = machine_learning_regression(df, selected_column, RandomForestRegressor())
+
+        fig = plot_histograme(df, selected_column)
+        graph = plot(fig, output_type='div')
+
+        fig2 = plot_correlation(X_numerique)
+        graph2 = plot(fig2, output_type='div')
+
+        graph3 = plot(plot_feature_importances(X_numerique, model_entraine, fig3), output_type='div')
+
+        # Renderizar el gráfico como HTML
+        #graph = plot( eval_regressor() 'graph.html', {'graph': fig})
+
+
+        # Utilise la fonction plot_diagramme_de_dispersion pour générer le graphique
+        # g = plot_diagramme_de_dispersion(df, selected_column)
+        # buffer = BytesIO()
+        # g.fig.savefig(buffer, format='png')
+        # buffer.seek(0)
+        # image_png = buffer.getvalue()
+        # buffer.close()
+        # graph4 = base64.b64encode(image_png)
+        # graph4 = graph4.decode('utf-8')
+
+        context = {'files': files,
+                   'fichier': fichier,
+                   'df': df,
+                   # 'selected_file_id': selected_file_id,
+                   'selected_column': selected_column,
+                    'graph': graph,
+                    'graph2': graph2,
+                    'graph3': graph3,
+                   # 'graph4': graph4,
+                   "rmse" : rmse,
+                   "mae" : mae
+                   }
+
+
+
+
+    elif request.method == 'POST' and 'adar' in request.POST:
+        fichier = request.session.get('fichier')
+        selected_column = request.session.get('selected_column')
+        df_dict = request.session.get(
+            'df')  # récupérer le df sous la forme d'un dictionnaire à partir de la session de l'utilisateur
+        if df_dict is not None:
+            df = pd.DataFrame.from_dict(df_dict)
+        selected_column = request.session.get('selected_column')
+
+        df = df.dropna()
+
+        X_numerique, model_entraine, rmse, mae, y_test, y_pred = machine_learning_regression(df, selected_column, AdaBoostRegressor())
+
+        fig = plot_histograme(df, selected_column)
+        graph = plot(fig, output_type='div')
+
+        fig2 = plot_correlation(X_numerique)
+        graph2 = plot(fig2, output_type='div')
+
+        graph3 = plot(plot_feature_importances(X_numerique, model_entraine, fig3), output_type='div')
+
+        # # Utilise la fonction plot_diagramme_de_dispersion pour générer le graphique
+        # g = plot_diagramme_de_dispersion(df, selected_column)
+        # buffer = BytesIO()
+        # g.fig.savefig(buffer, format='png')
+        # buffer.seek(0)
+        # image_png = buffer.getvalue()
+        # buffer.close()
+        # graph4 = base64.b64encode(image_png)
+        # graph4 = graph4.decode('utf-8')
+
+        context = {'files': files,
+                   'fichier': fichier,
+                   'df': df,
+                   # 'selected_file_id': selected_file_id,
+                   'selected_column': selected_column,
+                   'graph': graph,
+                    'graph2': graph2,
+                    'graph3': graph3,
+                   # 'graph4': graph4,
+                   "rmse": rmse,
+                   "mae": mae
+                   }
+
+    elif request.method == 'POST' and 'gbr' in request.POST:
+        fichier = request.session.get('fichier')
+        selected_column = request.session.get('selected_column')
+        df_dict = request.session.get(
+            'df')  # récupérer le df sous la forme d'un dictionnaire à partir de la session de l'utilisateur
+        if df_dict is not None:
+            df = pd.DataFrame.from_dict(df_dict)
+        selected_column = request.session.get('selected_column')
+
+        df = df.dropna()
+
+        X_numerique, model_entraine, rmse, mae, y_test, y_pred = machine_learning_regression(df, selected_column, GradientBoostingRegressor())
+
+        fig = plot_histograme(df, selected_column)
+        graph = plot(fig, output_type='div')
+
+        fig2 = plot_correlation(X_numerique)
+        graph2 = plot(fig2, output_type='div')
+
+        graph3 = plot(plot_feature_importances(X_numerique, model_entraine, fig3), output_type='div')
+        
+        fig4 = scatter_plot(y_test, y_pred)
+        graph4 = plot(fig4, output_type='div')
+
+        # Utilise la fonction plot_diagramme_de_dispersion pour générer le graphique
+        # g = plot_diagramme_de_dispersion(df, selected_column)
+        # buffer = BytesIO()
+        # g.fig.savefig(buffer, format='png')
+        # buffer.seek(0)
+        # image_png = buffer.getvalue()
+        # buffer.close()
+        # graph4 = base64.b64encode(image_png)
+        # graph4 = graph4.decode('utf-8')
+
+        context = {'files': files,
+                   'fichier': fichier,
+                   'df': df,
+                   # 'selected_file_id': selected_file_id,
+                   'selected_column': selected_column,
+                    'graph': graph,
+                    'graph2': graph2,
+                    'graph3': graph3,
+                    'graph4': graph4,
+                   "rmse": rmse,
+                   "mae" : mae
+                   }
+
+
+    elif request.method == 'GET':
+        context = {"files": files, 'df': df}
+
+        # selected_file_id = request.session.get('selected_file_id')
+        # if request.method == 'POST':
+        #     context['selected_file_id'] = selected_file_id
+        #     context['fichier'] = fichier
+
+    return render(request, "regression.html", context)
