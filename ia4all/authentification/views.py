@@ -7,33 +7,33 @@ from plotly.offline import plot
 import plotly.graph_objs as go
 import plotly.express as px
 from plotly.tools import mpl_to_plotly
-import matplotlib.pyplot as plt 
+# import matplotlib.pyplot as plt 
 from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
-import numpy as np
-from sklearn.cluster import DBSCAN
-from sklearn import metrics
+# import numpy as np
+from sklearn.cluster import DBSCAN, KMeans
+# from sklearn import metrics
 import pandas as pd
 
 import pandas as pd
 #import matplotlib.pyplot as plt 
 import numpy as np
-import seaborn as sns
+# import seaborn as sns
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier, RandomForestRegressor, GradientBoostingRegressor, AdaBoostRegressor
 from sklearn.metrics import accuracy_score, mean_absolute_error, mean_squared_error
 
-from django.core.files.storage import FileSystemStorage
+# from django.core.files.storage import FileSystemStorage
 
 from .models import FilesUpload 
 
 from .utils import plot_histograme, plot_correlation, plot_feature_importances, plot_diagramme_de_dispersion, plot_prediction_error
-import io
-import urllib, base64
+# import io
+import base64 #, urllib
 
 from io import BytesIO
-import base64
+
 
 
 
@@ -222,99 +222,6 @@ def index(request):
                "graph4": graph4
                }
     return render(request, "index.html", context)
-
-
-
-
-
-@login_required
-def explications(request):
-    files = FilesUpload.objects.filter(userid=request.user.id)
-    df = None
-    
-    
-    
-    if request.method == 'POST' and 'file' in request.POST:
-        # selected_file_id = request.POST['file']
-        selected_file_id = request.POST.get('file')
-        request.session['selected_file_id'] = selected_file_id # "selected_file_id" est enregistré dans la session de l'utilisateur
-        selected_file = FilesUpload.objects.get(pk=selected_file_id)
-        fichier = selected_file.file
-        request.session['fichier'] = str(fichier) # "fichier" est enregistré dans la session de l'utilisateur
-        
-        print("=======>"+str(fichier))
-
-
-        # Lire les données du fichier CSV et les convertir en un dataframe
-        try:
-            data = pd.read_csv(fichier)
-            df = pd.DataFrame(data)
-            print("df.shape ----> "+str(df.shape))
-            request.session['df'] = df.to_dict()  # le dataframe est enregistré dans la session de l'utilisateur
-            
-        except Exception as e:
-            context = {"error_message": f"Veuillez sélectionner un fichier CSV valide - Erreur: {str(e)}", "files": files}
-            return render(request, "explications.html", context)
-
-        
-    if request.method == 'POST' and 'colonne' in request.POST:
-        # le deuxième formulaire a été envoyé
-        selected_column = request.POST['colonne']
-        print(selected_column)
-        fichier = request.session.get('fichier')
-        selected_file_id = request.session.get('selected_file_id')
-        
-        df_dict = request.session.get('df') # récupérer le df sous la forme d'un dictionnaire à partir de la session de l'utilisateur
-        if df_dict is not None:
-            df = pd.DataFrame.from_dict(df_dict)
-
-        
-        
-        if selected_column and df is not None and not df.empty:
-           
-            df = df.dropna()
-            
-            y = df[selected_column].values
-            print(y)
-        
-            X = df[df.describe().columns].values
-
-            X = StandardScaler().fit_transform(X)
-
-            db = DBSCAN().fit(X)
-            labels = db.labels_
-
-            # Number of clusters in labels, ignoring noise if present.
-            n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
-            n_noise_ = list(labels).count(-1)
-            #Homogeneity = metrics.homogeneity_score(labels_true, labels)
-            #print(df)
-            
-            context = {"n_clusters_" : n_clusters_,
-                    "n_noise_" : n_noise_,
-                    "graphique": plt_div,
-                    "graph2": graph2,
-                    "graph3": graph3,
-                    "graph4": graph4,
-                    'files': files,
-                    'fichier' : fichier,
-                    'df': df,
-                    'selected_file_id': selected_file_id,
-                    'selected_column': selected_column
-                    }
-                   
-    
-    else:
-        context = {"files": files,
-                   'df': df}
-        
-        #selected_file_id = request.session.get('selected_file_id')
-        if request.method == 'POST':
-            context['selected_file_id'] = selected_file_id
-            context['fichier'] = fichier
-    
-    
-    return render(request, "explications.html", context)
 
 
 
@@ -702,3 +609,113 @@ def regression(request):
         #     context['fichier'] = fichier
 
     return render(request, "regression.html", context)
+
+
+@login_required
+def clustering(request):
+    files = FilesUpload.objects.filter(userid=request.user.id)
+    df = None
+    
+    
+    
+    if request.method == 'POST' and 'file' in request.POST:
+        # selected_file_id = request.POST['file']
+        selected_file_id = request.POST.get('file')
+        request.session['selected_file_id'] = selected_file_id # "selected_file_id" est enregistré dans la session de l'utilisateur
+        selected_file = FilesUpload.objects.get(pk=selected_file_id)
+        fichier = selected_file.file
+        request.session['fichier'] = str(fichier) # "fichier" est enregistré dans la session de l'utilisateur
+        
+        print("== le file est ====>"+str(fichier))
+
+
+        # Lire les données du fichier CSV et les convertir en un dataframe
+        try:
+            data = pd.read_csv(fichier)
+            df = pd.DataFrame(data)
+            print("df.shape of our data ----> "+str(df.shape))
+            request.session['df'] = df.to_dict()  # le dataframe est enregistré dans la session de l'utilisateur
+            
+        except Exception as e:
+            context = {"error_message": f"Veuillez sélectionner un fichier CSV valide - Erreur: {str(e)}", "files": files}
+            return render(request, "clustering.html", context)
+
+        
+    if request.method == 'POST' :
+        # le deuxième formulaire a été envoyé
+  
+        fichier = request.session.get('fichier')
+        selected_file_id = request.session.get('selected_file_id')
+        
+        df_dict = request.session.get('df') # récupérer le df sous la forme d'un dictionnaire à partir de la session de l'utilisateur
+        if df_dict is not None:
+            df = pd.DataFrame.from_dict(df_dict)
+
+        
+        
+        if df is not None and not df.empty:
+           
+            df = df.dropna()
+            print('cest ici notre df ---->>>>', df)
+            """ y = df[selected_column].values
+            print(y) """
+        
+            X = df[df.describe().columns].values
+
+            X = StandardScaler().fit_transform(X)
+
+            db = DBSCAN().fit(X)
+            labels = db.labels_
+            # Number of clusters in labels, ignoring noise if present.
+            n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+            n_noise_ = list(labels).count(-1)
+
+            # db['labels'] = db.predict(X), ,color="labels"
+            df_num = df.select_dtypes(exclude=['object'])
+
+            model_kmean3 = KMeans(n_clusters= n_clusters_, random_state=1, n_init = 5).fit(df_num)
+            model_kmean3
+
+            Clusters = model_kmean3.fit_predict(df_num)
+
+            centers = model_kmean3.cluster_centers_
+
+            df["Clusters"] = Clusters
+
+            
+            #Homogeneity = metrics.homogeneity_score(labels_true, labels)
+            #print(df)
+
+            # df2 = px.data.iris() # iris is a pandas DataFrame
+            df_num = df.select_dtypes(exclude=['object'])
+            fig2 = px.scatter(df, x=df_num.columns[0], y=df_num.columns[1],color="Clusters" , title="Scatter plot")
+            # fig2 =  plt.scatter(centers[:, 0], centers[:, 1], c='black', s=200, alpha=0.5)
+            graph2 = plot(fig2, output_type='div')
+            
+        
+            
+            context = {"n_clusters_" : n_clusters_,
+                    "n_noise_" : n_noise_,
+                    # "graphique": plt_div,
+                    "graph2": graph2,
+                    # "graph3": graph3,
+                    # "graph4": graph4,
+                    'files': files,
+                    'fichier' : fichier,
+                    'df': df,
+                    'selected_file_id': selected_file_id,
+                    }
+                   
+    
+    else:
+        context = {"files": files,
+                   'df': df}
+        
+        #selected_file_id = request.session.get('selected_file_id')
+        if request.method == 'POST':
+            context['selected_file_id'] = selected_file_id
+            context['fichier'] = fichier
+    
+    
+    return render(request, "clustering.html", context)
+

@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from authentification.views import inscription, connexion, deconnexion, index, suppression, explications, classification, regression
+from authentification.views import inscription, connexion, deconnexion, index, suppression, classification, regression, clustering
 
 from django.conf.urls.static import static
 from django.conf import settings
@@ -31,7 +31,7 @@ urlpatterns = [
     path("index", index, name="index"),
     path("classification", classification, name="classification"),
     path("regression", regression, name="regression"),
-    path("explications", explications, name="explications"),
+    path("clustering", clustering, name="clustering"),
     path('', include("fileupload.urls")),
     path("suppression/<int:id>", suppression, name="suppression"),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
