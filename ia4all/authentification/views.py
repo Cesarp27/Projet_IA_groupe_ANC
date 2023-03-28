@@ -28,7 +28,7 @@ from django.core.files.storage import FileSystemStorage
 
 from .models import FilesUpload 
 
-from .utils import plot_histograme, plot_correlation, plot_feature_importances, plot_diagramme_de_dispersion, scatter_plot
+from .utils import plot_histograme, plot_correlation, plot_feature_importances, plot_diagramme_de_dispersion, plot_prediction_error
 import io
 import urllib, base64
 
@@ -601,31 +601,19 @@ def regression(request):
 
         graph3 = plot(plot_feature_importances(X_numerique, model_entraine, fig3), output_type='div')
 
-        # Renderizar el gráfico como HTML
-        #graph = plot( eval_regressor() 'graph.html', {'graph': fig})
-
-
-        # Utilise la fonction plot_diagramme_de_dispersion pour générer le graphique
-        # g = plot_diagramme_de_dispersion(df, selected_column)
-        # buffer = BytesIO()
-        # g.fig.savefig(buffer, format='png')
-        # buffer.seek(0)
-        # image_png = buffer.getvalue()
-        # buffer.close()
-        # graph4 = base64.b64encode(image_png)
-        # graph4 = graph4.decode('utf-8')
+        fig4 = plot_prediction_error(y_test, y_pred)
+        graph4 = plot(fig4, output_type='div')
 
         context = {'files': files,
-                   'fichier': fichier,
-                   'df': df,
-                   # 'selected_file_id': selected_file_id,
-                   'selected_column': selected_column,
+                    'fichier': fichier,
+                    'df': df,
+                    'selected_column': selected_column,
                     'graph': graph,
                     'graph2': graph2,
                     'graph3': graph3,
-                   # 'graph4': graph4,
-                   "rmse" : rmse,
-                   "mae" : mae
+                    'graph4': graph4,
+                    "rmse" : rmse,
+                    "mae" : mae
                    }
 
 
@@ -652,27 +640,19 @@ def regression(request):
 
         graph3 = plot(plot_feature_importances(X_numerique, model_entraine, fig3), output_type='div')
 
-        # # Utilise la fonction plot_diagramme_de_dispersion pour générer le graphique
-        # g = plot_diagramme_de_dispersion(df, selected_column)
-        # buffer = BytesIO()
-        # g.fig.savefig(buffer, format='png')
-        # buffer.seek(0)
-        # image_png = buffer.getvalue()
-        # buffer.close()
-        # graph4 = base64.b64encode(image_png)
-        # graph4 = graph4.decode('utf-8')
+        fig4 = plot_prediction_error(y_test, y_pred)
+        graph4 = plot(fig4, output_type='div')
 
         context = {'files': files,
-                   'fichier': fichier,
-                   'df': df,
-                   # 'selected_file_id': selected_file_id,
-                   'selected_column': selected_column,
-                   'graph': graph,
+                    'fichier': fichier,
+                    'df': df,
+                    'selected_column': selected_column,
+                    'graph': graph,
                     'graph2': graph2,
                     'graph3': graph3,
-                   # 'graph4': graph4,
-                   "rmse": rmse,
-                   "mae": mae
+                    'graph4': graph4,
+                    "rmse": rmse,
+                    "mae": mae
                    }
 
     elif request.method == 'POST' and 'gbr' in request.POST:
@@ -695,31 +675,21 @@ def regression(request):
         graph2 = plot(fig2, output_type='div')
 
         graph3 = plot(plot_feature_importances(X_numerique, model_entraine, fig3), output_type='div')
-        
-        fig4 = scatter_plot(y_test, y_pred)
+
+        fig4 = plot_prediction_error(y_test, y_pred)
         graph4 = plot(fig4, output_type='div')
 
-        # Utilise la fonction plot_diagramme_de_dispersion pour générer le graphique
-        # g = plot_diagramme_de_dispersion(df, selected_column)
-        # buffer = BytesIO()
-        # g.fig.savefig(buffer, format='png')
-        # buffer.seek(0)
-        # image_png = buffer.getvalue()
-        # buffer.close()
-        # graph4 = base64.b64encode(image_png)
-        # graph4 = graph4.decode('utf-8')
 
         context = {'files': files,
-                   'fichier': fichier,
-                   'df': df,
-                   # 'selected_file_id': selected_file_id,
-                   'selected_column': selected_column,
+                    'fichier': fichier,
+                    'df': df,
+                    'selected_column': selected_column,
                     'graph': graph,
                     'graph2': graph2,
                     'graph3': graph3,
                     'graph4': graph4,
-                   "rmse": rmse,
-                   "mae" : mae
+                    "rmse": rmse,
+                    "mae" : mae
                    }
 
 
