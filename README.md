@@ -1,6 +1,10 @@
 # Projet_IA_groupe_ANC : Développer un site web Django exploitant de l'IA
 
 
+![image](https://user-images.githubusercontent.com/59603301/230472965-7796bd38-3adf-4524-8f4c-d0ae163857de.png)
+
+
+
 ### Contexte du projet
 
 IAOuverte est une petite startup qui veut rendre l'IA accessible à tous. Son fondateur, Samuel AltHomme, a pensé à un outil permettant à des utilisateurs d'uploader des données dans différents formats (csv, excel...), de choisir une tâche (régression, classification, clustering), un ou plusieurs algorithmes de la bibliothèque scikit learn et d'obtenir un résultat. Des graphiques viendront améliorer l'exploitation de ces résultats. Il compte nommer cet outil IA4All. 
