@@ -41,7 +41,6 @@ Inscrivez vous !
 
 
 Projet réalisé par :
-
-    - Célia Mato
-    - Noli Sapunxhiu
-    - César Parra
+- Célia Mato
+- Noli Sapunxhiu
+- César Parra
