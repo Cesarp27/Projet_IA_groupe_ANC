@@ -39,3 +39,9 @@ Dès que le serveur est actif, vous pouvez utiliser votre navigateur est accéde
 En espérant que vous apprécierez notre site Django.
 Inscrivez vous ! 
 
+
+Projet réalisé par :
+
+Célia Mato
+Noli Sapunxhiu
+César Parra
